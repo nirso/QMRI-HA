@@ -4,13 +4,13 @@ Pipeline &amp; Research Notebook - Neuroscience MSc Research Project in "Clinica
 
 This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
-## Step 1 - Creating the [HD-BET](https://github.com/MIC-DKFZ/HD-BET) brain masks to be used in the QUIT MPM pipeline
+## Step 1 - Creating the [HD-BET](https://github.com/MIC-DKFZ/HD-BET) brain masks to be used in the [QUIT](https://github.com/spinicist/QUIT) MPM pipeline
 - First, create and run fsl_roi.sh as documented in “Step 1” in the notebook.
 - Create an SGE job file that receives the index file and and index, and run it as following:
       
       qsub -t 1:[N] brain_mask_creation.job
     where N is the number of rows in the brain_mask_creation.index file.
-- **Then, run the QUIT MPM pipeline while providing the correct brain mask for each acquistion.**
+- **Then, run the [QUIT MPM pipeline](https://github.com/spinicist/QUIT/blob/master/Python/qipype/workflows/mpm.py) while providing the correct brain mask for each acquistion.**
 - Validate your steps and results.
 
 
