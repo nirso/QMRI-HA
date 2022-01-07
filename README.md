@@ -1,9 +1,13 @@
 # Clinical Applications of Quantitative MRI in Healthy Adolescents - Project Pipeline
+
 Pipeline &amp; Research Notebook - Neuroscience MSc Research Project in "Clinical Applications of Quantitative MRI in Healthy Adolescents"
+
+This Source Code Form is subject to the terms of the Mozilla Public License, v. 2.0. If a copy of the MPL was not distributed with this file, You can obtain one at http://mozilla.org/MPL/2.0/.
 
 ## Step 1 - Creating the [HD-BET](https://github.com/MIC-DKFZ/HD-BET) brain masks to be used in the QUIT MPM pipeline
 - First, create and run fsl_roi.sh as documented in “Step 1” in the notebook.
 - Create an SGE job file that receives the index file and and index, and run it as following:
+      
       qsub -t 1:[N] brain_mask_creation.job
     where N is the number of rows in the brain_mask_creation.index file.
 - **Then, run the QUIT MPM pipeline while providing the correct brain mask for each acquistion.**
@@ -24,8 +28,10 @@ Pipeline &amp; Research Notebook - Neuroscience MSc Research Project in "Clinica
 ## Step 4 - Creating the MTsat templates per age group using [ANTs](https://github.com/ANTsX/ANTs)
 - Copy the ANTs antsMultivariateTemplateConstruction2.sh [script](https://github.com/ANTsX/ANTs/blob/master/Scripts/antsMultivariateTemplateConstruction2.sh) into each one of the age_group directories under mt_delta_template_work_dir
 - Edit it to your liking according to your wanted SGE runtime configuration (e.g. QSUBOPTS)
-- Run, for example: 
-    ./antsMultivariateTemplateConstruction2.sh -b 0 -c 1 -d 3 -i 4 -g 0.2 -k 1 -n 0 -r 1 -o ${PWD}/mt_delta_template_14_and_above_output_ ${PWD}/sub*.nii.gz
+- Run, for example:
+ 
+```./antsMultivariateTemplateConstruction2.sh -b 0 -c 1 -d 3 -i 4 -g 0.2 -k 1 -n 0 -r 1 -o ${PWD}/mt_delta_template_14_and_above_output_ ${PWD}/sub*.nii.gz```
+ 
 - Validate your steps and results.
 
 
@@ -46,7 +52,8 @@ Pipeline &amp; Research Notebook - Neuroscience MSc Research Project in "Clinica
 
 ## Step 8 - now, we want to transform the R1, R2* and PD images from their original space into the age-appropriate MTsat template space
 - Create an SGE job file that receives the index file and and index, and run it as following:
-      qsub -t 1:[N] mpm_to_mt_template.job
+      
+      qsub -t 1:[N] mpm_to_mt_template.job  
     where N is the number of rows in the mpm_to_mt_template.index file
 - Follow step number 8 in the notebook and validate your steps and results.
 
@@ -58,6 +65,7 @@ Pipeline &amp; Research Notebook - Neuroscience MSc Research Project in "Clinica
 
 ## Step 10 - now, we want to transform the R1, R2* and PD images from the age-appropriate MTsat template space into the MNI template space
 - Create an SGE job file that receives the index file and and index, and run it as following:
+
       qsub -t 1:[N] mpm_in_mt_to_mni.job
 - where N is the number of rows in the mpm_in_mt_to_mni.index file.
 - Follow step number 10 in the notebook and validate your steps and results.
@@ -80,17 +88,21 @@ Pipeline &amp; Research Notebook - Neuroscience MSc Research Project in "Clinica
 - Create design and matrix files (age_corr_sorted.mat and age_corr.con, assuming each 4d file contain acquisitions from the same participants and sessions in the same temporal order).
 - A mask containing only white matter and gray matter was created on top of the existing WM/GM masks for the provided MNI template and theshloded.
 - Run permutation tests with age as a single covariate.
-    randomise_parallel -i 4d_all_mt_sorted.nii.gz -o mt_all_age_corr_sorted_qc2 -d age_corr_sorted.mat -t age_corr.con -m wm_gm_mask.nii.gz -n 10000 -T -D
+```
+randomise_parallel -i 4d_all_mt_sorted.nii.gz -o mt_all_age_corr_sorted_qc2 -d age_corr_sorted.mat -t age_corr.con -m wm_gm_mask.nii.gz -n 10000 -T -D
     
-    randomise_parallel -i 4d_all_r1_sorted.nii.gz -o r1_all_age_corr_sorted_qc2 -d age_corr_sorted.mat -t age_corr.con -m wm_gm_mask.nii.gz -n 10000 -T -D
+randomise_parallel -i 4d_all_r1_sorted.nii.gz -o r1_all_age_corr_sorted_qc2 -d age_corr_sorted.mat -t age_corr.con -m wm_gm_mask.nii.gz -n 10000 -T -D
     
-    randomise_parallel -i 4d_all_r2s_sorted.nii.gz -o r2s_all_age_corr_sorted_qc2 -d age_corr_sorted.mat -t age_corr.con -m wm_gm_mask.nii.gz -n 10000 -T -D
+randomise_parallel -i 4d_all_r2s_sorted.nii.gz -o r2s_all_age_corr_sorted_qc2 -d age_corr_sorted.mat -t age_corr.con -m wm_gm_mask.nii.gz -n 10000 -T -D
+```
 - Threshold the resulting images with values above 0.95 for statistically significancant clusters.
 
 **ROI analysis:**
 
 - Create a binary mask for each region. For instance, in the Harvard-Oxford Subcortical Atlas, the left pallidum has a value of "7". For example:
-    fslmaths HarvardOxford-sub-maxprob-thr0-1mm.nii.gz -thr 7 -uthr 7 -bin l_pallidum.nii.gz
+
+      fslmaths HarvardOxford-sub-maxprob-thr0-1mm.nii.gz -thr 7 -uthr 7 -bin l_pallidum.nii.gz  
 - For each permutation of (modality, ROI) run fslstats in order output the mean value. For example:
-    fslstats -t 4d_all_mt_sorted.nii.gz -k l_pallidum.nii.gz -m
+
+      fslstats -t 4d_all_mt_sorted.nii.gz -k l_pallidum.nii.gz -m
 - Finally, analyse the relationship between the mean MTsat, R1 and R2* values in each ROI and age by using the output of fslstats. Our statistical analysis was performed using [Graphpad Prism](http://graphpad.com).
